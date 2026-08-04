@@ -123,13 +123,6 @@ In addition to normal and streaming responses, the Mock Provider includes scenar
 - Model decisions must pass legal-action and bet-range validation and cannot bypass the poker rules.
 - Unrevealed computer hole cards remain hidden in hand replays.
 
-Runtime files:
-
-```text
-config/api-config.json    # Local API configuration; excluded from Git
-logs/                     # AI request and backend logs; excluded from Git
-```
-
 Clearing browser site data removes local game records. Export a JSON save from the **Statistics** page before clearing data or switching browsers.
 
 ## Local Development
@@ -176,28 +169,6 @@ Vite proxies `/api` requests to `http://127.0.0.1:3000`.
 ├─ start.bat              # Windows launcher
 └─ start.sh               # macOS / Linux launcher
 ```
-
-## Test Coverage
-
-The automated test suite covers:
-
-- Deck generation, shuffling, and dealing
-- Legal betting, minimum raises, and all-in rules
-- Best-hand evaluation from five to seven cards
-- Main pots, side pots, ties, and chip distribution
-- Quick-game and tournament state transitions
-- Local saves, statistics, internationalization, and animation state
-- AI state snapshots, prompt construction, and model-response parsing
-- Request concurrency, cancellation, timeouts, configuration, and log redaction
-
-Before publishing a release, run:
-
-```bash
-npm test
-npm run build
-```
-
-Tests use local data and the Mock Provider. They do not call real models or consume API credits.
 
 ## Current Limitations
 
