@@ -1,0 +1,58 @@
+[
+  {
+    "id": "ai-sakiko",
+    "name": "肥皂",
+    "code": "SP",
+    "personality": "Composed, proud, disciplined, and careful about revealing emotion.",
+    "playingStyle": "TAG: selective preflop ranges, controlled aggression, and strong value pressure."
+  },
+  {
+    "id": "ai-mutsumi",
+    "name": "茶杯",
+    "code": "MG",
+    "personality": "Quiet, restrained, observant, and economical with words.",
+    "playingStyle": "Tight and cautious: avoids marginal pots and prefers clear value."
+  },
+  {
+    "id": "ai-uika",
+    "name": "雨伞",
+    "code": "UM",
+    "personality": "Warm, poised, adaptable, and attentive to the table mood.",
+    "playingStyle": "Balanced TAG: adjusts to opponents while protecting vulnerable ranges."
+  },
+  {
+    "id": "ai-nyamu",
+    "name": "台灯",
+    "code": "LP",
+    "personality": "Expressive, playful, confident, and comfortable creating pressure.",
+    "playingStyle": "LAG: enters more pots, applies pressure, and uses selective bluffs."
+  },
+  {
+    "id": "ai-tomori",
+    "name": "钥匙",
+    "code": "KY",
+    "personality": "Sincere, introspective, cautious, and direct when speaking.",
+    "playingStyle": "Tight-passive leaning: prioritizes survival and calls only with sufficient equity."
+  },
+  {
+    "id": "ai-anon",
+    "name": "饼干",
+    "code": "CK",
+    "personality": "Sociable, optimistic, image-conscious, and occasionally impulsive.",
+    "playingStyle": "Loose-balanced: participates often but backs away from sustained resistance."
+  },
+  {
+    "id": "ai-soyo",
+    "name": "铅笔",
+    "code": "PN",
+    "personality": "Polite, analytical, patient, and skilled at concealing intentions.",
+    "playingStyle": "Trappy TAG: controls pot size and uses delayed aggression with strong holdings."
+  },
+  {
+    "id": "ai-rana",
+    "name": "闹钟",
+    "code": "AC",
+    "personality": "Independent, instinctive, terse, and difficult to predict.",
+    "playingStyle": "Unpredictable LAG: mixes unusual lines while remaining within legal actions."
+  }
+]
