@@ -49,7 +49,7 @@ echo.
 echo Starting Texas Holdem LLM with the local AI backend...
 echo Service: http://127.0.0.1:3000/
 echo Logs: %~dp0logs
-echo Configuration: %~dp0config\api-config.json
+echo Visitor configurations: %~dp0config\visitors\
 echo Keep this window open while playing.
 echo Close this window or press Ctrl+C to stop the server.
 echo.

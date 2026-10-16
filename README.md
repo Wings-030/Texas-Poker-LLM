@@ -115,15 +115,18 @@ In addition to normal and streaming responses, the Mock Provider includes scenar
 ## Data, Privacy, and Security
 
 - Game settings, statistics, hand history, and the active save are stored in browser `localStorage`.
-- The API key is stored locally in `config/api-config.json`, which is excluded by `.gitignore`.
+- Each visitor supplies their own API base URL, API key, and model, with usage billed to that provider account. Missing configuration never falls back to the site owner's key.
+- The browser stores a random access credential in `localStorage`. The server stores configurations in `config/visitors/<credential-hash>.json` and logs in `logs/visitors/<credential-hash>/`; both are excluded by `.gitignore`. API keys are not included in browser game saves or returned in full to the page.
+- Configuration, logs, and request cancellation are isolated by browser; tabs on the same site in the same browser share configuration. Never share the browser credential. Public access must use HTTPS.
+- The old `config/api-config.json` (including an old file selected by `AI_CONFIG_PATH`) is no longer used for web requests or migrated to visitors. Enter your details again on first use. `AI_CONFIG_DIR` and `AI_LOG_DIR` can override the visitor configuration root and log root.
 - The backend binds only to `127.0.0.1` and does not expose itself to the LAN or public internet.
-- The browser communicates only with the local backend; remote requests containing the API key are sent by the backend.
+- The browser communicates only with this site's backend, which sends remote requests using the current visitor's key. Keys are stored on the server, where the server administrator has file access.
 - Configuration responses report only whether a key exists and a masked suffix, never the complete key.
 - Logs recursively redact common authentication headers, tokens, cookies, passwords, and secret fields.
 - Model decisions must pass legal-action and bet-range validation and cannot bypass the poker rules.
 - Unrevealed computer hole cards remain hidden in hand replays.
 
-Clearing browser site data removes local game records. Export a JSON save from the **Statistics** page before clearing data or switching browsers.
+Clearing browser site data removes local game records and the API access credential; switching browsers also requires entering API details again. To delete a server-stored API key, use **Clear Configuration** before clearing site data; clearing site data alone does not delete server files. Export a JSON save from **Statistics** before clearing data or switching browsers. Game exports do not include the API access credential.
 
 ## Local Development
 

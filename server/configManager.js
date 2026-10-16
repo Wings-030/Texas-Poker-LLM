@@ -82,11 +82,9 @@ export class ConfigManager {
   }
   async save(input) {
     const config = normalizeConfig(input, await this.read());
-    await mkdir(path.dirname(this.configPath), { recursive: true });
-    await writeFile(this.configPath, `${JSON.stringify(config, null, 2)}\n`, "utf8");
+    await mkdir(path.dirname(this.configPath), { recursive: true, mode: 0o700 });
+    await writeFile(this.configPath, `${JSON.stringify(config, null, 2)}\n`, { encoding: "utf8", mode: 0o600 });
     return config;
   }
   async clear() { await rm(this.configPath, { force: true }); return { ...DEFAULT_CONFIG }; }
 }
-
-export const configManager = new ConfigManager();

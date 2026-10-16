@@ -36,12 +36,23 @@ export interface DecisionResponse {
   debug: { model: string; durationMs: number; retryCount: number; rawContent: string; parsedDecision: unknown; finalAction: string; logFile: string };
 }
 
+function visitorHeaders(): Record<string, string> {
+  const storageKey = "poker-ai-client-token";
+  let token = localStorage.getItem(storageKey);
+  if (!token || !/^[a-f0-9]{64}$/.test(token)) {
+    token = Array.from(crypto.getRandomValues(new Uint8Array(32)), (byte) => byte.toString(16).padStart(2, "0")).join("");
+    localStorage.setItem(storageKey, token);
+  }
+  return { "X-Poker-Client-Token": token };
+}
+
 async function api<T>(path: string, init?: RequestInit): Promise<T> {
   let response: Response;
-  try { response = await fetch(path, { ...init, headers: { "Content-Type": "application/json", ...(init?.headers ?? {}) } }); }
-  catch (cause) { const error = new Error("本地 AI 后端未运行。请使用 start.bat 启动游戏。") as Error & { detail?: BackendError }; error.detail = { type: "BACKEND_NOT_RUNNING", message: error.message }; throw error; }
-  const payload = await response.json().catch(() => ({ error: { type: "INVALID_RESPONSE", message: `本地后端返回了无法解析的响应（HTTP ${response.status}）。` } }));
-  if (!response.ok || payload.ok === false) { const error = new Error(payload.error?.message ?? "本地后端请求失败") as Error & { detail?: BackendError }; error.detail = payload.error; throw error; }
+  const headers = { "Content-Type": "application/json", ...(init?.headers ?? {}), ...visitorHeaders() };
+  try { response = await fetch(path, { ...init, cache: "no-store", headers }); }
+  catch (cause) { const error = new Error("无法连接 AI 服务，请稍后重试。") as Error & { detail?: BackendError }; error.detail = { type: "BACKEND_NOT_RUNNING", message: error.message }; throw error; }
+  const payload = await response.json().catch(() => ({ error: { type: "INVALID_RESPONSE", message: `AI 服务返回了无法解析的响应（HTTP ${response.status}）。` } }));
+  if (!response.ok || payload.ok === false) { const error = new Error(payload.error?.message ?? "AI 服务请求失败") as Error & { detail?: BackendError }; error.detail = payload.error; throw error; }
   return payload as T;
 }
 
@@ -53,7 +64,6 @@ export const testBackendConnection = () => api<{ ok: true; requestId: string; mo
 export const fetchBackendModels = async () => (await api<{ ok: true; models: string[] }>("/api/models")).models;
 export const fetchLogs = async () => (await api<{ ok: true; logs: LogSummary[] }>("/api/logs")).logs;
 export const fetchLog = (id: string) => api<{ ok: true; relativePath: string; content: string }>(`/api/logs/${encodeURIComponent(id)}`);
-export const openLogDirectory = () => api<{ ok: true }>("/api/logs/open", { method: "POST", body: "{}" });
 export const clearBackendLogs = () => api<{ ok: true }>("/api/logs", { method: "DELETE", body: JSON.stringify({ confirm: "CLEAR" }) });
 export const cancelDecision = (requestId: string) => api<{ ok: boolean }>(`/api/ai/requests/${encodeURIComponent(requestId)}`, { method: "DELETE" });
 export const markStaleDecision = (request: ReturnType<typeof buildPokerAIRequest>) => api<{ ok: true }>("/api/ai/stale", { method: "POST", body: JSON.stringify(request) });
@@ -71,17 +81,18 @@ function readSseBlock(block: string): { event: string; data: unknown } | null {
 
 export async function requestAIDecision(request: ReturnType<typeof buildPokerAIRequest>, signal: AbortSignal, onStatus: (status: string, detail?: Record<string, unknown>) => void): Promise<DecisionResponse> {
   let response: Response;
-  try { response = await fetch("/api/ai/decision", { method: "POST", headers: { "Content-Type": "application/json", "X-Request-ID": request.requestId }, body: JSON.stringify(request), signal }); }
+  const headers = { "Content-Type": "application/json", "X-Request-ID": request.requestId, ...visitorHeaders() };
+  try { response = await fetch("/api/ai/decision", { method: "POST", cache: "no-store", headers, body: JSON.stringify(request), signal }); }
   catch (cause) {
     if (signal.aborted) { const error = new DOMException("AI 请求已取消", "AbortError"); throw error; }
-    const error = new Error("本地 AI 后端未运行。请使用 start.bat 启动游戏。") as Error & { detail?: BackendError }; error.detail = { type: "BACKEND_NOT_RUNNING", message: error.message, requestId: request.requestId }; throw error;
+    const error = new Error("无法连接 AI 服务，请稍后重试。") as Error & { detail?: BackendError }; error.detail = { type: "BACKEND_NOT_RUNNING", message: error.message, requestId: request.requestId }; throw error;
   }
   if (!response.ok) {
     const payload = await response.json().catch(() => ({ error: { type: "INVALID_RESPONSE", message: `HTTP ${response.status}` } }));
     const error = new Error(payload.error?.message ?? "AI 请求失败") as Error & { detail?: BackendError }; error.detail = payload.error; throw error;
   }
   if (!response.headers.get("content-type")?.includes("text/event-stream")) return response.json() as Promise<DecisionResponse>;
-  if (!response.body) throw new Error("本地后端未返回流式响应体");
+  if (!response.body) throw new Error("AI 服务未返回流式响应体");
   const reader = response.body.getReader();
   const decoder = new TextDecoder();
   let buffer = "";

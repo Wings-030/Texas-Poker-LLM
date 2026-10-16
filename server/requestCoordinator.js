@@ -2,28 +2,31 @@ import { AppError } from "./errorHandler.js";
 
 export class RequestCoordinator {
   constructor() { this.byCharacter = new Map(); this.byRequest = new Map(); }
-  begin(characterId, requestId) {
-    if (this.byCharacter.has(characterId)) throw new AppError("CONCURRENT_REQUEST", "该电脑玩家已有一个进行中的请求。", { httpStatus: 409 });
+  begin(characterId, requestId, scope = "local") {
+    const characterKey = JSON.stringify([scope, characterId]);
+    const requestKey = JSON.stringify([scope, requestId]);
+    if (this.byCharacter.has(characterKey) || this.byRequest.has(requestKey)) throw new AppError("CONCURRENT_REQUEST", "该电脑玩家已有一个进行中的请求。", { httpStatus: 409 });
     const controller = new AbortController();
-    const entry = { characterId, requestId, controller, cancelled: false };
-    this.byCharacter.set(characterId, entry);
-    this.byRequest.set(requestId, entry);
+    const entry = { characterId, characterKey, requestId, controller, cancelled: false };
+    this.byCharacter.set(characterKey, entry);
+    this.byRequest.set(requestKey, entry);
     return entry;
   }
-  cancel(requestId) {
-    const entry = this.byRequest.get(requestId);
+  cancel(requestId, scope = "local") {
+    const entry = this.byRequest.get(JSON.stringify([scope, requestId]));
     if (!entry) return false;
     entry.cancelled = true;
     entry.controller.abort(new Error("User cancelled request"));
     return true;
   }
-  finish(requestId) {
-    const entry = this.byRequest.get(requestId);
+  finish(requestId, scope = "local") {
+    const requestKey = JSON.stringify([scope, requestId]);
+    const entry = this.byRequest.get(requestKey);
     if (!entry) return;
-    this.byRequest.delete(requestId);
-    if (this.byCharacter.get(entry.characterId)?.requestId === requestId) this.byCharacter.delete(entry.characterId);
+    this.byRequest.delete(requestKey);
+    if (this.byCharacter.get(entry.characterKey)?.requestId === requestId) this.byCharacter.delete(entry.characterKey);
   }
-  isActive(characterId, requestId) { return this.byCharacter.get(characterId)?.requestId === requestId; }
+  isActive(characterId, requestId, scope = "local") { return this.byCharacter.get(JSON.stringify([scope, characterId]))?.requestId === requestId; }
 }
 
 export const requestCoordinator = new RequestCoordinator();

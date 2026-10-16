@@ -1,7 +1,6 @@
 import { appendFile, mkdir, readdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { spawn } from "node:child_process";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 export const DEFAULT_LOG_DIR = process.env.AI_LOG_DIR || path.join(ROOT, "logs");
@@ -221,12 +220,6 @@ export async function cleanupOldLogs(retentionDays, logDir = DEFAULT_LOG_DIR) {
     if (entry.isDirectory() && /^\d{4}-\d{2}-\d{2}$/.test(entry.name) && (await stat(target)).mtimeMs < cutoff) await rm(target, { recursive: true, force: true });
     if (entry.isFile() && /^server-\d{4}-\d{2}-\d{2}\.txt$/.test(entry.name) && (await stat(target)).mtimeMs < cutoff) await rm(target, { force: true });
   }
-}
-
-export function openLogDirectory(logDir = DEFAULT_LOG_DIR) {
-  mkdir(logDir, { recursive: true }).then(() => {
-    if (process.platform === "win32") spawn("explorer.exe", [path.resolve(logDir)], { detached: true, stdio: "ignore", windowsHide: true }).unref();
-  });
 }
 
 export { localIso };

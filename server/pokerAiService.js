@@ -12,12 +12,12 @@ function requireIds(input) {
 export async function makePokerDecision(input, config, callbacks = {}) {
   requireIds(input);
   const { gameId, handId, turnId, characterId, requestId, gameState, characterPrompt } = input;
-  const active = requestCoordinator.begin(characterId, requestId);
+  const active = requestCoordinator.begin(JSON.stringify([gameId, characterId]), requestId, callbacks.scope);
   let log;
   try {
     const built = buildPokerMessages({ characterId, gameState, characterPrompt });
     const requestBody = buildRequestBody(config, built.messages);
-    log = new PokerRequestLog({ requestId, gameId, handId, round: gameState?.table?.round, characterId, characterName: built.character.name, seat: gameState?.table?.seat, model: config.model, config, gameState, systemPrompt: built.systemPrompt, messages: built.messages, requestBody });
+    log = new PokerRequestLog({ requestId, gameId, handId, round: gameState?.table?.round, characterId, characterName: built.character.name, seat: gameState?.table?.seat, model: config.model, config, gameState, systemPrompt: built.systemPrompt, messages: built.messages, requestBody }, callbacks);
     callbacks.onStatus?.("requesting", { requestId });
     const parseAttempts = Math.max(1, Number(config.maxRetries ?? 0) + 1);
     let messages = built.messages;
@@ -92,13 +92,13 @@ export async function makePokerDecision(input, config, callbacks = {}) {
       callbacks.onStatus?.("fallback", { requestId, logFile, error: serializeError(error, requestId, logFile).error });
       return { ok: true, gameId, handId, turnId, characterId, requestId, decision: fallback, fallback: true, error: serializeError(error, requestId, logFile).error, debug: { model: config.model, durationMs: log.metadata.durationMs, retryCount: Math.max(0, log.attempts.length - 1), rawContent: log.assembledContent, parsedDecision: fallback, finalAction: fallback.action, logFile } };
     }
-    await serverLog(`FAILED request=${requestId} character=${characterId} type=${error.type ?? "UNKNOWN_ERROR"} message=${error.message}`);
+    await serverLog(`FAILED request=${requestId} character=${characterId} type=${error.type ?? "UNKNOWN_ERROR"} message=${error.message}`, callbacks);
     throw error;
   } finally {
-    requestCoordinator.finish(requestId);
+    requestCoordinator.finish(requestId, callbacks.scope);
   }
 }
 
-export async function markStaleResponse(input) {
-  await serverLog(`STALE_RESPONSE_DISCARDED request=${input.requestId} game=${input.gameId} hand=${input.handId} turn=${input.turnId} character=${input.characterId}`);
+export async function markStaleResponse(input, options = {}) {
+  await serverLog(`STALE_RESPONSE_DISCARDED request=${input.requestId} game=${input.gameId} hand=${input.handId} turn=${input.turnId} character=${input.characterId}`, options);
 }

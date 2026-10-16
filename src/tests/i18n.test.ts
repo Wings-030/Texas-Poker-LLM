@@ -5,7 +5,7 @@ describe("中英文界面翻译", () => {
   it("翻译静态文案和参数文案", () => {
     expect(translate("en", "牌局统计")).toBe("Game Statistics");
     expect(translate("en", "第 {count} 手", { count: 12 })).toBe("Hand 12");
-    expect(translate("en", "连接模式：本地后端")).toBe("Connection mode: local backend");
+    expect(translate("en", "使用您自己的 API")).toBe("Use your own API");
     expect(translate("en", "已获取 {count} 个模型。", { count: 3 })).toBe("Loaded 3 model(s).");
     expect(translate("en", "刷新列表")).toBe("Refresh List");
     expect(translate("en", "暂无 AI 请求日志")).toBe("No AI request logs");

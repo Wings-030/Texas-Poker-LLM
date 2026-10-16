@@ -11,7 +11,7 @@ export async function getModels(config) {
   return models;
 }
 
-export async function testConnection(config) {
+export async function testConnection(config, options = {}) {
   if (!config.apiBaseUrl || !config.apiKey || !config.model) throw new AppError("CONFIG_MISSING", "测试连接需要 API Base URL、API Key 和模型名称。", { httpStatus: 400 });
   const requestId = crypto.randomUUID();
   let models = [];
@@ -21,7 +21,7 @@ export async function testConnection(config) {
   if (modelsSupported && !models.includes(config.model)) throw new AppError("MODEL_NOT_FOUND", `模型列表中不存在 ${config.model}。`, { httpStatus: 404 });
   const messages = [{ role: "system", content: "Return exactly the word OK." }, { role: "user", content: "Connection test." }];
   const requestBody = buildRequestBody(config, messages, { parameters: { max_tokens: 8 } });
-  const log = new PokerRequestLog({ requestId, characterId: "connection-test", characterName: "Connection Test", model: config.model, config, systemPrompt: messages[0].content, messages, requestBody });
+  const log = new PokerRequestLog({ requestId, characterId: "connection-test", characterName: "Connection Test", model: config.model, config, systemPrompt: messages[0].content, messages, requestBody }, options);
   try {
     const result = await requestProvider({ config, body: requestBody, requestId, onAttempt: (attempt) => log.attempt(attempt), onChunk: (raw, timestamp) => log.chunk(raw, timestamp) });
     await log.finalize({ status: "success", rawResponses: [result.rawResponse], assembledContent: result.content, assembledReasoning: result.reasoning, usage: result.usage });

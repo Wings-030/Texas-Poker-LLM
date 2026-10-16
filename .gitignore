@@ -1,6 +1,7 @@
 node_modules/
 dist/
 config/api-config.json
+config/visitors/
 logs/
 *.local
 *.tsbuildinfo
