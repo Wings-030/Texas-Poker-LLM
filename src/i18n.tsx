@@ -2,6 +2,18 @@ import { createContext, useContext, useMemo, type ReactNode } from "react";
 import type { Language } from "./types/poker";
 
 const english: Record<string, string> = {
+  "好牌，": "Good cards.",
+  "更好的判断。": "Better decisions.",
+  "落座，读懂对手。在每一次下注之间，找到自己的节奏。": "Take a seat. Read the room. Find your rhythm, one decision at a time.",
+  "无限注德州扑克": "No-limit Hold’em",
+  "个性 AI 对手": "AI personalities",
+  "逐手复盘": "Hand replays",
+  "今晚，打哪一局？": "Your table awaits.",
+  "选好模式，邀请对手，余下的交给牌桌。": "Choose your game, invite your opponents, and settle in.",
+  "不急于每一手，专注每一步。": "Play with patience. Decide with purpose.",
+  "自动存档 · 随时回来": "Auto-saved · Always here",
+  "大模型与角色提示词 · 可选": "Models & character prompts · Optional",
+  "{count} 人牌桌": "Table for {count}",
   "德州扑克": "Texas Hold'em",
   "主页": "Home",
   "牌桌": "Table",

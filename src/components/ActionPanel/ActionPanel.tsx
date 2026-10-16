@@ -38,9 +38,9 @@ export function ActionPanel({ game, disabled, onAction }: Props) {
         <label className="amount-field"><span>{t("选择下注额")}</span><input aria-label={t("下注金额")} type="number" min={legal.minRaiseTo} max={legal.maxRaiseTo} step={game.config.bigBlind} value={target} disabled={!actionable || (!legal.canBet && !legal.canRaise)} onChange={(event) => setAmount(Number(event.target.value))} /></label>
         <div className="amount-slider"><input aria-label={t("下注滑块")} type="range" min={Math.min(legal.minRaiseTo, legal.maxRaiseTo)} max={Math.max(legal.minRaiseTo, legal.maxRaiseTo)} step={1} value={target} disabled={!actionable || (!legal.canBet && !legal.canRaise)} onChange={(event) => setAmount(Number(event.target.value))} /><small>{legal.minRaiseTo}<span>{target}</span>{legal.maxRaiseTo}</small></div>
         <div className="quick-bets">
-          <button disabled={!legal.canBet && !legal.canRaise} onClick={() => setAmount(legal.minRaiseTo)}>{t("最小加注")}</button>
-          {[1 / 3, 1 / 2, 2 / 3, 3 / 4, 1].map((fraction) => <button key={fraction} disabled={!legal.canBet && !legal.canRaise} onClick={() => setPotFraction(fraction)}>{fraction === 1 ? `1× ${t("底池")}` : `${Math.round(fraction * 100)}% ${t("底池")}`}</button>)}
-          <button disabled={!legal.canAllIn} onClick={() => setAmount(legal.maxRaiseTo)}>{t("全下额")}</button>
+          <button disabled={!actionable || (!legal.canBet && !legal.canRaise)} onClick={() => setAmount(legal.minRaiseTo)}>{t("最小加注")}</button>
+          {[1 / 3, 1 / 2, 2 / 3, 3 / 4, 1].map((fraction) => <button key={fraction} disabled={!actionable || (!legal.canBet && !legal.canRaise)} onClick={() => setPotFraction(fraction)}>{fraction === 1 ? `1× ${t("底池")}` : `${Math.round(fraction * 100)}% ${t("底池")}`}</button>)}
+          <button disabled={!actionable || !legal.canAllIn} onClick={() => setAmount(legal.maxRaiseTo)}>{t("全下额")}</button>
         </div>
       </div>
       <div className="primary-actions">

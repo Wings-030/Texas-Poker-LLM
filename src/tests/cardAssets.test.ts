@@ -6,7 +6,7 @@ describe("card assets", () => {
     expect(cardAssetPath({ rank: "A", suit: "hearts" })).toMatch(/cards\/H-1\.png$/);
     expect(cardAssetPath({ rank: "10", suit: "diamonds" })).toMatch(/cards\/D-10\.png$/);
     expect(cardAssetPath({ rank: "K", suit: "spades" })).toMatch(/cards\/S-13\.png$/);
-    expect(CARD_BACK_ASSET).toMatch(/cards\/Back-B\.png$/);
+    expect(CARD_BACK_ASSET).toMatch(/cards\/Back-Club\.svg$/);
   });
 
   it("creates a unique local asset mapping for all 52 cards", () => {

@@ -7,6 +7,7 @@ export function PotDisplay({ players, total }: { players: Player[]; total: numbe
   const sidePots = buildPots(players).filter((pot) => pot.eligiblePlayerIds.length > 1).slice(1);
   return (
     <div className="pot-display" data-pot>
+      <div className="pot-chips" aria-hidden="true"><i /><i /><i /></div>
       <span>{t("主底池")}</span><strong>{total.toLocaleString(locale)}</strong>
       {sidePots.length > 0 && <small>{sidePots.map((pot, index) => `${t("边池")} ${index + 1} ${pot.amount.toLocaleString(locale)}`).join(" · ")}</small>}
     </div>

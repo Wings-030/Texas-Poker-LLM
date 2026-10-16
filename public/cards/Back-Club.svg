@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 486 757" fill="none">
+  <defs>
+    <linearGradient id="felt" x2="1" y2="1"><stop stop-color="#214e43"/><stop offset="1" stop-color="#092b25"/></linearGradient>
+    <pattern id="weave" width="30" height="30" patternUnits="userSpaceOnUse"><path d="m15 0 15 15-15 15L0 15Z" stroke="#b5a16e" stroke-opacity=".2"/></pattern>
+  </defs>
+  <rect x="2" y="2" width="482" height="753" rx="28" fill="#eee8d8"/>
+  <rect x="19" y="19" width="448" height="719" rx="18" fill="url(#felt)"/>
+  <rect x="33" y="33" width="420" height="691" rx="12" fill="url(#weave)" stroke="#c9b47e" stroke-width="3"/>
+  <path d="M57 113V57h56m260 0h56v56m0 531v56h-56m-260 0H57v-56" stroke="#d8c491" stroke-width="4"/>
+  <path d="m243 221 134 157-134 158-134-158Z" fill="#12392f" stroke="#ccb27a" stroke-width="3"/>
+  <path d="m243 241 116 137-116 138-116-138Z" stroke="#ccb27a" stroke-opacity=".5"/>
+  <path d="M243 295c-24 35-71 59-71 94 0 35 42 43 64 16l-17 49h48l-17-49c22 27 64 19 64-16 0-35-47-59-71-94Z" fill="#d8c491"/>
+  <g fill="#d8c491"><path d="m243 93 9 15-9 15-9-15Zm0 541 9 15-9 15-9-15Z"/><circle cx="243" cy="162" r="3"/><circle cx="243" cy="595" r="3"/></g>
+</svg>

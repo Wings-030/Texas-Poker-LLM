@@ -27,7 +27,7 @@ const CARD_ASSET_BASE = `${import.meta.env.BASE_URL}cards`;
 const loggedMappings = new Set<string>();
 const loggedFailures = new Set<string>();
 
-export const CARD_BACK_ASSET = `${CARD_ASSET_BASE}/Back-B.png`;
+export const CARD_BACK_ASSET = `${CARD_ASSET_BASE}/Back-Club.svg`;
 
 export function cardAssetName(card: Card): string {
   return `${card.rank} of ${card.suit}`;

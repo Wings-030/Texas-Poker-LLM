@@ -1,10 +1,14 @@
 import { CardView } from "../Card/CardView";
+import { PlayerAvatar } from "./PlayerAvatar";
 import { findAIPlayer } from "../../data/aiPlayers";
 import { useI18n } from "../../i18n";
 import type { Player } from "../../types/poker";
+import type { CSSProperties } from "react";
 
-export function PlayerSeat({ player, active, dealer, blind, reveal, thinking = false, concealHoleCards = false, winner = false }: {
+export function PlayerSeat({ player, style, edge, active, dealer, blind, reveal, thinking = false, concealHoleCards = false, winner = false }: {
   player: Player;
+  style: CSSProperties;
+  edge: string;
   active: boolean;
   dealer: boolean;
   blind?: "SB" | "BB";
@@ -23,8 +27,10 @@ export function PlayerSeat({ player, active, dealer, blind, reveal, thinking = f
       aria-current={active ? "true" : undefined}
       data-state={thinking ? "thinking" : player.status}
       data-player-id={player.id}
+      style={style}
+      data-edge={edge}
     >
-      <div className="avatar" aria-hidden="true">{avatarLabel}</div>
+      <PlayerAvatar code={avatarLabel} className="avatar" />
       <div className="seat-info">
         <div className="seat-name"><strong>{text(player.name)}</strong><span className="seat-markers">{dealer && <span className="dealer-chip">D</span>}{blind && <span className={`blind-chip blind-${blind.toLowerCase()}`}>{blind}</span>}</span></div>
         <span className="chip-count" data-chip-count>{player.chips.toLocaleString(locale)} {t("筹码")}</span>

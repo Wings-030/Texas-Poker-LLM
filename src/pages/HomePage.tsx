@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { CardArtwork } from "../components/Card/CardArtwork";
+import { PlayerAvatar } from "../components/PlayerSeat/PlayerAvatar";
 import { AICharacterSettingsPanel } from "../components/SettingsModal/AICharacterSettingsPanel";
 import { AI_PLAYERS } from "../data/aiPlayers";
 import { useI18n } from "../i18n";
@@ -12,7 +12,7 @@ const defaults: Record<GameMode, GameConfig> = {
 };
 
 export function HomePage({ hasResume, settings, onSettingsChange, onStart, onResume }: { hasResume: boolean; settings: Settings; onSettingsChange: (settings: Settings) => void; onStart: (config: GameConfig) => void; onResume: () => void }) {
-  const { t, text } = useI18n();
+  const { t, text, locale } = useI18n();
   const [mode, setMode] = useState<GameMode>("quick");
   const [config, setConfig] = useState(defaults.quick);
   const chooseMode = (next: GameMode) => { setMode(next); setConfig({ ...defaults[next] }); };
@@ -26,11 +26,25 @@ export function HomePage({ hasResume, settings, onSettingsChange, onStart, onRes
   return (
     <main className="home-page">
       <section className="hero-section">
-        <div className="hero-copy"><span className="eyebrow">NO-LIMIT HOLD'EM</span><h1>Texas Hold’em LLM</h1><p>{t("一张安静的牌桌，一套完整的无限注德州扑克规则。磨练判断，复盘每一步。")}</p>{hasResume && <button className="resume-button" onClick={onResume}><span>{t("继续上次牌局")}</span><small>{t("存档会在每次行动后自动更新")}</small><i className="resume-arrow" aria-hidden="true">→</i></button>}</div>
-        <div className="hero-cards" aria-hidden="true"><CardArtwork className="show-card back-card" /><CardArtwork className="show-card ace-card" card={{ rank: "A", suit: "hearts" }} /><CardArtwork className="show-card" card={{ rank: "K", suit: "spades" }} /></div>
+        <img className="hero-art" src={`${import.meta.env.BASE_URL}art/poker-room.png`} alt="" fetchPriority="high" />
+        <div className="hero-copy">
+          <span className="eyebrow"><i /> THE PRIVATE TABLE</span>
+          <h1>{t("好牌，")}<br /><em>{t("更好的判断。")}</em></h1>
+          <p>{t("落座，读懂对手。在每一次下注之间，找到自己的节奏。")}</p>
+          <div className="hero-features"><span>♠ {t("无限注德州扑克")}</span><span>{t("个性 AI 对手")}</span><span>{t("逐手复盘")}</span></div>
+          {hasResume && <button className="resume-button" onClick={onResume}><span>{t("继续上次牌局")}</span><i className="resume-arrow" aria-hidden="true">↗</i></button>}
+        </div>
+        <div className="hero-caption" aria-hidden="true"><span>01 / THE CARD ROOM</span><span>PLAY YOUR OWN HAND.</span></div>
       </section>
       <section className="game-setup">
-        <div className="mode-tabs"><button className={mode === "quick" ? "selected" : ""} onClick={() => chooseMode("quick")}><span>{t("快速游戏")}</span><small>{t("固定盲注，输光即结束")}</small></button><button className={mode === "tournament" ? "selected" : ""} onClick={() => chooseMode("tournament")}><span>{t("锦标赛")}</span><small>{t("盲注升级，决出最后冠军")}</small></button></div>
+        <aside className="setup-sidebar">
+          <div className="setup-intro"><span className="eyebrow">TAKE YOUR SEAT</span><h2>{t("今晚，打哪一局？")}</h2><p>{t("选好模式，邀请对手，余下的交给牌桌。")}</p></div>
+          <div className="mode-tabs">
+            <button className={mode === "quick" ? "selected" : ""} aria-pressed={mode === "quick"} onClick={() => chooseMode("quick")}><i aria-hidden="true">♠</i><span>{t("快速游戏")}</span><small>{t("固定盲注，输光即结束")}</small><b aria-hidden="true">↗</b></button>
+            <button className={mode === "tournament" ? "selected" : ""} aria-pressed={mode === "tournament"} onClick={() => chooseMode("tournament")}><i aria-hidden="true">♜</i><span>{t("锦标赛")}</span><small>{t("盲注升级，决出最后冠军")}</small><b aria-hidden="true">↗</b></button>
+          </div>
+          <div className="room-note"><span aria-hidden="true">♧</span><p>{t("不急于每一手，专注每一步。")}</p><small>{t("自动存档 · 随时回来")}</small></div>
+        </aside>
         <div className="setup-card">
           <div className="section-heading"><div><span className="eyebrow">{t("牌桌配置")}</span><h2>{t(mode === "quick" ? "建立快速牌桌" : "建立单桌锦标赛")}</h2></div><span className="mode-badge">{t(mode === "quick" ? "现金模式" : "淘汰赛")}</span></div>
           <div className="form-grid">
@@ -46,16 +60,16 @@ export function HomePage({ hasResume, settings, onSettingsChange, onStart, onRes
             <div className="ai-player-grid">
               {AI_PLAYERS.map((player) => {
                 const selected = selectedAIPlayerIds.includes(player.id);
-                return <button type="button" key={player.id} className={selected ? "selected" : ""} aria-pressed={selected} onClick={() => toggleAIPlayer(player.id)}><span className="ai-avatar" aria-hidden="true">{player.code}</span><strong>{text(player.name)}</strong><small>{selected ? t("已入座") : t("点击选择")}</small></button>;
+                return <button type="button" key={player.id} className={selected ? "selected" : ""} aria-pressed={selected} onClick={() => toggleAIPlayer(player.id)}><PlayerAvatar code={player.code} className="ai-avatar" /><strong>{text(player.name)}</strong><small>{selected ? t("已入座") : t("点击选择")}</small><span className="selection-mark" aria-hidden="true">{selected ? "✓" : "+"}</span></button>;
               })}
             </div>
           </section>
-          {selectedAIPlayerIds.length > 0 && <section className="home-character-ai" aria-labelledby="character-ai-title">
-            <div className="picker-heading"><div><h3 id="character-ai-title">{t("配置角色 AI")}</h3><small>{t("只为本局已入座的角色设置大模型与提示词")}</small></div></div>
+          {selectedAIPlayerIds.length > 0 && <details className="home-character-ai">
+            <summary><span><strong>{t("配置角色 AI")}</strong><small>{t("大模型与角色提示词 · 可选")}</small></span><i aria-hidden="true">+</i></summary>
             <AICharacterSettingsPanel settings={settings} onChange={onSettingsChange} characterIds={selectedAIPlayerIds} />
-          </section>}
+          </details>}
           {selectedAIPlayerIds.length === 0 && <p className="picker-error">{t("请至少选择一位电脑玩家")}</p>}
-          <button className="primary start-game" disabled={selectedAIPlayerIds.length === 0} onClick={() => onStart(config)}>{t("坐下并开始")} <span>→</span></button>
+          <div className="setup-launch"><div><strong>{t("{count} 人牌桌", { count: selectedAIPlayerIds.length + 1 })}</strong><small>{t("初始筹码")} {config.startingChips.toLocaleString(locale)} · {t("盲注")} {config.smallBlind}/{config.bigBlind}</small></div><button className="primary start-game" disabled={selectedAIPlayerIds.length === 0} onClick={() => onStart(config)}>{t("坐下并开始")} <span aria-hidden="true">↗</span></button></div>
         </div>
       </section>
     </main>

@@ -1,5 +1,6 @@
 import { getAICharacterSetting, setAICharacterSetting } from "../../data/aiCharacterSettings";
 import { AI_PLAYERS } from "../../data/aiPlayers";
+import { PlayerAvatar } from "../PlayerSeat/PlayerAvatar";
 import { useI18n } from "../../i18n";
 import type { AICharacterSetting, Settings } from "../../types/poker";
 
@@ -27,7 +28,7 @@ export function AICharacterSettingsPanel({ settings, onChange, characterIds }: {
           return (
             <article className={`character-ai-card ${value.useModel ? "model-enabled" : ""}`} key={player.id}>
               <div className="character-ai-heading">
-                <span className="ai-avatar" aria-hidden="true">{player.code}</span>
+                <PlayerAvatar code={player.code} className="ai-avatar" />
                 <span><strong>{text(player.name)}</strong><small>{t(value.useModel ? "大模型决策" : "本地策略决策")}</small></span>
                 <label className="model-toggle"><span>{t("启用大模型")}</span><input type="checkbox" checked={value.useModel} onChange={(event) => update(player.id, { useModel: event.target.checked })} /></label>
               </div>
