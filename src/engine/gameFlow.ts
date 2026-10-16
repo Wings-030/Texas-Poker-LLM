@@ -2,7 +2,7 @@ import { actionLabel, isBettingStreet, validateAction } from "./betting";
 import { createDeck, drawCards, shuffleDeck } from "./deck";
 import { evaluateHand } from "./handEvaluator";
 import { awardPots, buildPots } from "./pots";
-import { blindsForLevel, nextTournamentState, rotateDealer } from "./tournament";
+import { blindsForLevel, eliminationPlace, nextTournamentState, rotateDealer } from "./tournament";
 import { AI_PLAYERS, findAIPlayer } from "../data/aiPlayers";
 import type {
   GameConfig, GameState, HandRecord, HandResult, Player, PlayerAction, PlayerActionType, ReplayStep, Street,
@@ -172,6 +172,7 @@ function contenderCount(state: GameState): number {
 }
 
 function settleUncontested(state: GameState): GameState {
+  refundUncalledBet(state);
   const winner = state.players.find((player) => player.status !== "folded" && player.status !== "eliminated");
   if (!winner) throw new Error("无法找到未弃牌的获胜玩家");
   const amount = state.potTotal;
@@ -218,13 +219,31 @@ function settleShowdown(state: GameState): GameState {
 
 function finishTournamentHand(state: GameState): GameState {
   if (state.tournament) {
+    for (const player of state.players) {
+      if (player.chips === 0 && !state.tournament.eliminatedPlayerIds.includes(player.id)) player.finishPlace = eliminationPlace(state.players, player.id);
+    }
     state.tournament = nextTournamentState(state.tournament, state.players, state.config.handsPerLevel);
+    const champion = state.players.find((player) => player.id === state.tournament?.championId);
+    if (champion) champion.finishPlace = 1;
     if (state.tournament.championId) state.message += `；${state.players.find((player) => player.id === state.tournament?.championId)?.name} 获得冠军`;
   }
   return state;
 }
 
+function refundUncalledBet(state: GameState): void {
+  const ordered = [...state.players].sort((a, b) => b.streetBet - a.streetBet);
+  const highest = ordered[0];
+  const refund = highest.streetBet - (ordered[1]?.streetBet ?? 0);
+  if (refund <= 0 || highest.status === "folded") return;
+  highest.chips += refund;
+  highest.streetBet -= refund;
+  highest.totalBet -= refund;
+  state.potTotal -= refund;
+  if (highest.status === "all-in") highest.status = "active";
+}
+
 function advanceStreet(state: GameState): GameState {
+  refundUncalledBet(state);
   for (const player of state.players) {
     player.streetBet = 0;
     player.acted = false;
@@ -262,6 +281,8 @@ function normalizeAutomaticProgress(input: GameState): GameState {
   if (actors.length === 0 || bettingRoundComplete(state)) return advanceStreet(state);
   if (actors.length === 1) {
     const actor = actors[0];
+    // With no opponent able to bet again, only actual contributions must be matched.
+    state.currentBet = Math.max(...state.players.filter((player) => player.status !== "folded" && player.status !== "eliminated").map((player) => player.streetBet));
     const toCall = Math.max(0, state.currentBet - actor.streetBet);
     if (toCall === 0) return advanceStreet(state);
   }

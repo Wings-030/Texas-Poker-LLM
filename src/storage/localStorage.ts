@@ -72,26 +72,54 @@ function normalizePlayerNames(data: SaveData): SaveData {
   };
 }
 
-export function loadSaveData(): SaveData {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return defaultSaveData();
-    const parsed = JSON.parse(raw) as Partial<SaveData>;
-    if (parsed.version !== 1) return defaultSaveData();
-    return normalizePlayerNames({
-      version: 1,
-      settings: { ...defaultSettings, ...parsed.settings, aiCharacters: { ...defaultSettings.aiCharacters, ...parsed.settings?.aiCharacters } },
-      statistics: { ...emptyStatistics, ...parsed.statistics },
-      history: Array.isArray(parsed.history) ? parsed.history.slice(0, 300) : [],
-      activeGame: parsed.activeGame ?? null,
-    });
-  } catch {
-    return defaultSaveData();
-  }
+function normalizeSave(parsed: Partial<SaveData>): SaveData {
+  if (parsed.version !== 1) throw new Error("不是有效的德州扑克存档文件");
+  return normalizePlayerNames({
+    version: 1,
+    settings: { ...defaultSettings, ...parsed.settings, aiCharacters: { ...defaultSettings.aiCharacters, ...parsed.settings?.aiCharacters } },
+    statistics: { ...emptyStatistics, ...parsed.statistics },
+    history: Array.isArray(parsed.history) ? parsed.history.slice(0, 300) : [],
+    activeGame: parsed.activeGame ?? null,
+  });
 }
 
-export function saveData(data: SaveData): void {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...data, history: data.history.slice(0, 300) }));
+async function saveStore<T>(mode: IDBTransactionMode, operation: (store: IDBObjectStore) => IDBRequest<T>): Promise<T> {
+  const db = await new Promise<IDBDatabase>((resolve, reject) => {
+    const request = indexedDB.open("solo-texas-holdem", 1);
+    request.onupgradeneeded = () => request.result.createObjectStore("saves");
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+  try {
+    return await new Promise<T>((resolve, reject) => {
+      const transaction = db.transaction("saves", mode);
+      const request = operation(transaction.objectStore("saves"));
+      transaction.oncomplete = () => resolve(request.result);
+      transaction.onabort = () => reject(transaction.error ?? request.error ?? new Error("存档写入失败"));
+    });
+  } finally { db.close(); }
+}
+
+let saveQueue: Promise<void> = Promise.resolve();
+
+export async function loadSaveData(): Promise<SaveData> {
+  await saveQueue;
+  const stored = await saveStore<SaveData | undefined>("readonly", (store) => store.get(STORAGE_KEY));
+  if (stored) return normalizeSave(stored);
+  const legacy = localStorage.getItem(STORAGE_KEY);
+  if (!legacy) return defaultSaveData();
+  const migrated = normalizeSave(JSON.parse(legacy));
+  // Do not discard the old save until its replacement has committed successfully.
+  await saveData(migrated);
+  try { localStorage.removeItem(STORAGE_KEY); } catch { /* The durable copy is already in IndexedDB. */ }
+  return migrated;
+}
+
+export async function saveData(data: SaveData): Promise<void> {
+  const snapshot = structuredClone({ ...data, history: data.history.slice(0, 300) });
+  const pending = saveQueue.then(async () => { await saveStore("readwrite", (store) => store.put(snapshot, STORAGE_KEY)); });
+  saveQueue = pending.catch(() => {});
+  return pending;
 }
 
 function startingHandKey(record: HandRecord): string {
@@ -109,7 +137,9 @@ export function addHandToStatistics(statsInput: GameStatistics, record: HandReco
   const heroActions = record.actions.filter((action) => action.playerId === "hero");
   const preflop = heroActions.filter((action) => action.street === "preflop");
   const voluntarilyInPot = preflop.some((action) => ["call", "bet", "raise", "all-in"].includes(action.type));
-  const preflopRaised = preflop.some((action) => ["raise", "all-in"].includes(action.type));
+  const preflopRaised = preflop.some((action) => action.type === "raise") || record.replay.some((step, index) =>
+    step.action?.playerId === "hero" && step.action.street === "preflop" && step.action.type === "all-in"
+    && step.currentBet > (record.replay[index - 1]?.currentBet ?? record.bigBlind));
   const sawShowdown = record.result.reason === "showdown" && Boolean(record.revealedHoleCards.hero);
 
   stats.hands += 1;

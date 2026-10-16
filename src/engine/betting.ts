@@ -19,6 +19,9 @@ export function getLegalActions(state: GameState, playerId: string): LegalAction
   const toCall = player ? Math.max(0, state.currentBet - player.streetBet) : 0;
   const maxRaiseTo = player ? player.streetBet + player.chips : 0;
   const minRaiseTo = state.currentBet === 0 ? state.config.bigBlind : state.currentBet + state.minRaise;
+  const raiseReopened = Boolean(player && (!player.acted || state.currentBet - player.streetBet >= state.minRaise));
+  const canBeCalled = state.players.some((other) => other.id !== playerId && other.status === "active" && other.chips > 0);
+  const canIncreaseBet = actionable && raiseReopened && canBeCalled;
   return {
     toCall,
     minRaiseTo,
@@ -26,9 +29,9 @@ export function getLegalActions(state: GameState, playerId: string): LegalAction
     canFold: actionable,
     canCheck: actionable && toCall === 0,
     canCall: actionable && toCall > 0 && Boolean(player && player.chips > toCall),
-    canBet: actionable && state.currentBet === 0 && maxRaiseTo >= minRaiseTo,
-    canRaise: actionable && state.currentBet > 0 && maxRaiseTo >= minRaiseTo,
-    canAllIn: actionable && Boolean(player && player.chips > 0),
+    canBet: canIncreaseBet && state.currentBet === 0 && maxRaiseTo >= minRaiseTo,
+    canRaise: canIncreaseBet && state.currentBet > 0 && maxRaiseTo >= minRaiseTo,
+    canAllIn: actionable && (maxRaiseTo <= state.currentBet || canIncreaseBet),
   };
 }
 

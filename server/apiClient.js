@@ -1,6 +1,7 @@
 import { setTimeout as delay } from "node:timers/promises";
 import { AppError, classifyError, providerHttpError } from "./errorHandler.js";
 import { buildProviderUrl, extractProviderContent, mergeStreamText } from "./responseParser.js";
+import { fetchProvider } from "./providerTransport.js";
 
 const FORBIDDEN_HEADERS = new Set(["host", "content-length", "connection"]);
 const RETRYABLE_STATUS = new Set([429, 500, 502, 503, 504]);
@@ -79,8 +80,9 @@ async function parseStream(response, context, callbacks) {
       const extracted = extractProviderContent(payload);
       const previousContent = content;
       const previousReasoning = reasoning;
-      content = mergeStreamText(content, extracted.content);
-      reasoning = mergeStreamText(reasoning, extracted.reasoning);
+      const cumulative = !payload?.choices?.[0]?.delta;
+      content = mergeStreamText(content, extracted.content, cumulative);
+      reasoning = mergeStreamText(reasoning, extracted.reasoning, cumulative);
       finishReason = extracted.finishReason ?? finishReason;
       usage = extracted.usage ?? usage;
       if (content !== previousContent) callbacks.onContent?.(content.slice(previousContent.length), content);
@@ -130,7 +132,7 @@ export async function requestProvider({ config, endpoint = "chat/completions", m
     onAttempt?.(attempt);
     const abort = attachAbort(signal, config.timeoutMs);
     try {
-      const response = await fetch(requestUrl, { method, headers: buildHeaders(config), body: body === undefined ? undefined : JSON.stringify(body), signal: abort.controller.signal });
+      const response = await fetchProvider(requestUrl, { method, headers: buildHeaders(config), body: body === undefined ? undefined : JSON.stringify(body), signal: abort.controller.signal });
       if (!response.ok) {
         const remoteBody = await response.text();
         throw providerHttpError(response.status, remoteBody, { requestUrl, requestMethod: method, durationMs: Date.now() - startedAt, retryCount: attempt - 1 });

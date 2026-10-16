@@ -9,7 +9,7 @@ export function buildPots(players: readonly Player[]): Pot[] {
   for (const level of levels) {
     const involved = contributors.filter((player) => player.totalBet >= level);
     const amount = (level - previous) * involved.length;
-    if (amount > 0) {
+    if (amount > 0 && involved.length > 1) {
       pots.push({
         amount,
         cap: level,

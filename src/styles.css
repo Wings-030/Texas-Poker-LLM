@@ -446,3 +446,7 @@ footer { margin-top: auto; padding: 18px clamp(18px, 4vw, 64px); color: var(--mu
 @media (prefers-reduced-motion: reduce) {
   *,*::before,*::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }
+/* Keep save failures visible until a write succeeds; progress remains exportable. */
+.storage-error { margin: 16px auto; padding: 16px; max-width: 1180px; border: 1px solid #b87c53; border-radius: 12px; background: #35251d; color: #f1d9c2; }
+.storage-error p { margin: 0 0 12px; }
+.storage-error button { margin-right: 12px; }

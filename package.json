@@ -14,15 +14,18 @@
   },
   "dependencies": {
     "@vitejs/plugin-react": "latest",
-    "vite": "latest",
-    "typescript": "latest",
+    "express": "^5.1.0",
+    "ipaddr.js": "^2.5.0",
     "react": "latest",
     "react-dom": "latest",
-    "express": "^5.1.0"
+    "typescript": "latest",
+    "undici": "^7.30.1",
+    "vite": "latest"
   },
   "devDependencies": {
     "@types/react": "latest",
     "@types/react-dom": "latest",
+    "fake-indexeddb": "^6.2.5",
     "vitest": "latest"
   }
 }

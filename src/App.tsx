@@ -1,6 +1,7 @@
 import { Component, useEffect, useState, type ErrorInfo, type ReactNode } from "react";
 import { SettingsModal } from "./components/SettingsModal/SettingsModal";
 import { createGame, createHandRecord } from "./engine/gameFlow";
+import { eliminationPlace } from "./engine/tournament";
 import { GamePage } from "./pages/GamePage";
 import { HomePage } from "./pages/HomePage";
 import { ReplayPage } from "./pages/ReplayPage";
@@ -22,14 +23,34 @@ class ErrorBoundary extends Component<{ children: ReactNode; language: Language 
 }
 
 export default function App() {
-  const [data, setData] = useState<SaveData>(() => loadSaveData());
-  const [page, setPage] = useState<Page>(() => data.activeGame ? "game" : "home");
+  const [data, setData] = useState<SaveData>(defaultSaveData);
+  const [page, setPage] = useState<Page>("home");
+  const [loadStatus, setLoadStatus] = useState<"loading" | "ready" | "error">("loading");
+  const [loadAttempt, setLoadAttempt] = useState(0);
+  const [saveAttempt, setSaveAttempt] = useState(0);
+  const [saveFailed, setSaveFailed] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [toast, setToast] = useState("");
   const language = data.settings.language;
   const t = (source: string) => translate(language, source);
 
-  useEffect(() => { saveData(data); }, [data]);
+  useEffect(() => {
+    let cancelled = false;
+    setLoadStatus("loading");
+    loadSaveData().then((loaded) => {
+      if (cancelled) return;
+      setData(loaded);
+      setPage(loaded.activeGame ? "game" : "home");
+      setLoadStatus("ready");
+    }).catch(() => { if (!cancelled) setLoadStatus("error"); });
+    return () => { cancelled = true; };
+  }, [loadAttempt]);
+  useEffect(() => {
+    if (loadStatus !== "ready") return;
+    let cancelled = false;
+    saveData(data).then(() => { if (!cancelled) setSaveFailed(false); }).catch(() => { if (!cancelled) setSaveFailed(true); });
+    return () => { cancelled = true; };
+  }, [data, loadStatus, saveAttempt]);
   useEffect(() => { document.documentElement.lang = language === "zh" ? "zh-CN" : "en"; document.title = "Texas Hold’em LLM"; }, [language]);
   useEffect(() => { if (!toast) return; const timer = window.setTimeout(() => setToast(""), 2800); return () => window.clearTimeout(timer); }, [toast]);
 
@@ -53,7 +74,7 @@ export default function App() {
         statistics.tournamentWins += 1;
         statistics.bestTournamentPlace = 1;
       } else if (game.config.mode === "tournament" && game.players[0].chips === 0) {
-        const place = game.players.filter((player) => player.chips > 0).length + 1;
+        const place = game.players[0].finishPlace ?? eliminationPlace(game.players, "hero");
         statistics.bestTournamentPlace = statistics.bestTournamentPlace === null ? place : Math.min(statistics.bestTournamentPlace, place);
       }
       return { ...current, history: [record, ...current.history].slice(0, 300), statistics };
@@ -63,10 +84,13 @@ export default function App() {
   const handleImport = async (file: File) => { try { setData(await importSave(file)); setToast(t("存档导入成功")); } catch (caught) { setToast(translateGameText(language, caught instanceof Error ? caught.message : "导入失败")); } };
   const clear = () => { const fresh = defaultSaveData(); setData({ ...fresh, settings: data.settings }); setToast(t("统计与历史已清空")); };
 
+  if (loadStatus !== "ready") return <main className="fatal-error" role="status"><h1>{t(loadStatus === "loading" ? "正在读取存档…" : "无法读取存档")}</h1>{loadStatus === "error" && <><p>{t("原有存档尚未改动，请重试读取。")}</p><button className="primary" onClick={() => setLoadAttempt((value) => value + 1)}>{t("重试读取")}</button></>}</main>;
+
   return (
     <I18nProvider language={language}>
     <div className={`app card-style-${data.settings.cardStyle} ${data.settings.animation ? "animations" : ""}`}>
       <header className="site-header"><button className="brand" onClick={() => setPage("home")}><span>♠</span><strong>Texas Hold’em LLM</strong></button><nav aria-label={t("主页")}><button aria-current={page === "home" ? "page" : undefined} className={page === "home" ? "active" : ""} onClick={() => setPage("home")}>{t("主页")}</button><button aria-current={page === "game" ? "page" : undefined} className={page === "game" ? "active" : ""} disabled={!data.activeGame} onClick={() => data.activeGame && setPage("game")}>{t("牌桌")}</button><button aria-current={page === "statistics" ? "page" : undefined} className={page === "statistics" ? "active" : ""} onClick={() => setPage("statistics")}>{t("统计")}</button><button aria-current={page === "replay" ? "page" : undefined} className={page === "replay" ? "active" : ""} onClick={() => setPage("replay")}>{t("历史复盘")}</button></nav><div className="header-actions"><div className="language-switch" aria-label="Language"><button className={language === "zh" ? "active" : ""} onClick={() => changeSettings({ ...data.settings, language: "zh" })}>中</button><button className={language === "en" ? "active" : ""} onClick={() => changeSettings({ ...data.settings, language: "en" })}>EN</button></div><button className="header-settings" aria-label={t("偏好设置")} onClick={() => setSettingsOpen(true)}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true"><path d="M4 7h16M4 17h16" /><circle cx="9" cy="7" r="3" /><circle cx="15" cy="17" r="3" /></svg><span>{t("偏好设置")}</span></button></div></header>
+      {saveFailed && <aside className="storage-error" role="alert"><p>{t("自动保存失败。请重试，或导出当前进度后再关闭页面。")}</p><button onClick={() => setSaveAttempt((value) => value + 1)}>{t("重试保存")}</button><button onClick={() => exportSave(data)}>{t("导出 JSON")}</button></aside>}
       <ErrorBoundary language={language}>
       {page === "home" && <HomePage hasResume={Boolean(data.activeGame && data.activeGame.phase !== "finished")} settings={data.settings} onSettingsChange={changeSettings} onStart={start} onResume={() => setPage("game")} />}
       {page === "game" && data.activeGame && <GamePage game={data.activeGame} settings={data.settings} onGameChange={changeGame} onHandComplete={completeHand} onHome={() => setPage("home")} onSettings={() => setSettingsOpen(true)} />}

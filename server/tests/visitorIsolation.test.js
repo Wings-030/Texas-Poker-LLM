@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import express from "express";
 import { createHash } from "node:crypto";
 import { mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
@@ -33,6 +33,7 @@ async function configure(token, name) {
 }
 
 beforeEach(async () => {
+  vi.stubEnv("AI_ALLOW_PRIVATE_ENDPOINTS", "true");
   directory = await mkdtemp(path.join(os.tmpdir(), "poker-visitors-"));
   options = { configDir: path.join(directory, "config", "visitors"), logDir: path.join(directory, "logs") };
   await mkdir(path.dirname(options.configDir));
@@ -60,6 +61,7 @@ beforeEach(async () => {
 });
 
 afterEach(async () => {
+  vi.unstubAllEnvs();
   await Promise.all(servers.splice(0).map((server) => new Promise((resolve) => { server.closeAllConnections(); server.close(resolve); })));
   if (directory) {
     expect(path.dirname(directory)).toBe(path.resolve(os.tmpdir()));

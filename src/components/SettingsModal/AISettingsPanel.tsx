@@ -36,8 +36,8 @@ export const AISettingsPanel = forwardRef<AISettingsPanelHandle>(function AISett
     finally { setBusy(false); }
   };
   useImperativeHandle(ref, () => ({ save }));
-  const loadModels = async () => { setBusy(true); try { const values = await fetchBackendModels(); setModels(values); setModelMenuOpen(values.length > 0); setMessage({ source: "已获取 {count} 个模型。", values: { count: values.length } }); } catch (error) { setMessage(failureMessage(error, "获取模型列表失败，可继续手动填写模型名称。")); } finally { setBusy(false); } };
-  const test = async () => { setBusy(true); try { const result = await testBackendConnection(); setMessage({ source: result.streamSupported ? "连接成功：{model}；流式支持：是；日志：{logFile}" : "连接成功：{model}；流式支持：否；日志：{logFile}", values: { model: result.model, logFile: result.logFile } }); } catch (error) { setMessage(failureMessage(error, "测试连接失败")); } finally { setBusy(false); } };
+  const loadModels = async () => { if (!(await save())) return; setBusy(true); try { const values = await fetchBackendModels(); setModels(values); setModelMenuOpen(values.length > 0); setMessage({ source: "已获取 {count} 个模型。", values: { count: values.length } }); } catch (error) { setMessage(failureMessage(error, "获取模型列表失败，可继续手动填写模型名称。")); } finally { setBusy(false); } };
+  const test = async () => { if (!(await save())) return; setBusy(true); try { const result = await testBackendConnection(); setMessage({ source: result.streamSupported ? "连接成功：{model}；流式支持：是；日志：{logFile}" : "连接成功：{model}；流式支持：否；日志：{logFile}", values: { model: result.model, logFile: result.logFile } }); } catch (error) { setMessage(failureMessage(error, "测试连接失败")); } finally { setBusy(false); } };
   const clear = async () => { if (!window.confirm(t("确定清除当前浏览器对应的 API 配置吗？"))) return; setBusy(true); try { setForm(toForm(await clearBackendConfig())); setMessage({ source: "API 配置已清除。" }); } catch (error) { setMessage(failureMessage(error, "清除配置失败")); } finally { setBusy(false); } };
   if (!form) return <div className="api-status-card">{messageText}</div>;
   return (

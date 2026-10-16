@@ -21,7 +21,7 @@ export function nextTournamentState(
   const eliminated = players.filter((player) => player.chips === 0 && !tournament.eliminatedPlayerIds.includes(player.id));
   const finalStandings = [...tournament.finalStandings];
   const eliminatedIds = [...tournament.eliminatedPlayerIds];
-  for (const player of eliminated.sort((a, b) => a.seat - b.seat)) {
+  for (const player of eliminated.sort((a, b) => a.startingChips - b.startingChips || a.seat - b.seat)) {
     eliminatedIds.push(player.id);
     finalStandings.unshift(player.id);
   }
@@ -38,6 +38,13 @@ export function nextTournamentState(
     finalStandings,
     championId,
   };
+}
+
+// Players eliminated in the same hand rank by their stack at the start of it.
+// Equal starting stacks share a place.
+export function eliminationPlace(players: readonly Player[], playerId: string): number {
+  const eliminated = players.find((player) => player.id === playerId)!;
+  return 1 + players.filter((player) => player.chips > 0 || player.chips === 0 && player.startingChips > eliminated.startingChips).length;
 }
 
 export function rotateDealer(players: readonly Player[], dealerIndex: number): number {

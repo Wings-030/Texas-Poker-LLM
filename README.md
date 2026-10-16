@@ -73,7 +73,7 @@ The backend supports the OpenAI Chat Completions protocol. Supply a compatible p
 
 1. Open **Preferences → AI API Settings**.
 2. Enter the connection details, such as a base URL ending in `/v1`.
-3. Save and test the configuration. If model discovery is unavailable, enter the model name manually.
+3. Click **Get Models** to save the current connection details and fetch models immediately, even with a blank model field. Select a model, then test the connection; tests also save the current form first. If discovery is unavailable, enter the model name manually.
 4. Open **Character AI** to enable LLM decisions and set additional prompts for individual opponents.
 5. Use **Default Prompts** to edit each character’s personality and playing style.
 
@@ -83,7 +83,7 @@ Model actions are checked against the rules engine. Missing configuration, faile
 
 ## Saves and API Keys
 
-- **Game data:** settings, statistics, hand history, and the active game are stored in browser `localStorage`. JSON exports contain game data, not your API key or API access credential.
+- **Game data:** settings, statistics, hand history, and the active game are stored in browser IndexedDB. Existing `localStorage` saves migrate automatically after a successful write. Save failures show persistent retry and JSON export controls. JSON exports contain game data, not your API key or API access credential.
 - **Visitor configuration:** the browser keeps a random access credential. The backend uses it to isolate API configuration, logs, and request cancellation. Tabs on the same site in the same browser share this configuration; another browser or site origin has separate storage.
 - **Key storage:** provider requests go through this site’s backend. API keys are stored on that server and are accessible to its administrator. On the online demo, this means the hosted server; when self-hosting, it means your own server. The full saved key is not returned to the page. Missing configuration never uses the site owner’s key.
 - **Deleting a key:** use **AI API Settings → Clear Configuration** before clearing browser site data. Clearing browser data alone removes your access credential but does not delete the server’s configuration file.
@@ -116,7 +116,7 @@ Open [localhost:5173](http://127.0.0.1:5173/). Vite proxies `/api` requests to t
 
 ### Test Without API Credits
 
-Run `npm run mock-provider` alongside the local application, then configure:
+Start the local backend with `AI_ALLOW_PRIVATE_ENDPOINTS=true` to permit the mock provider (PowerShell: `$env:AI_ALLOW_PRIVATE_ENDPOINTS="true"; npm.cmd run server`; macOS/Linux: `AI_ALLOW_PRIVATE_ENDPOINTS=true npm run server`). Run `npm run mock-provider` in another terminal, then configure:
 
 ```text
 API Base URL: http://127.0.0.1:3999/v1
@@ -145,6 +145,8 @@ docs/             Art direction and screenshots
 Run `npm install` and `npm start`. Express serves `dist/` and the API on `127.0.0.1:3000`; `PORT` can change the port. For public access, place an HTTPS reverse proxy in front of it and preserve streaming responses for the AI endpoints. Full LLM functionality requires the backend, so static-only hosting is insufficient.
 
 Visitor configuration defaults to `config/visitors/`, and logs to `logs/visitors/`. Use `AI_CONFIG_DIR` and `AI_LOG_DIR` to override the configuration root and log root. Existing legacy `config/api-config.json` files are not used for visitor requests; configure the API through the page.
+
+Provider requests accept public IP addresses only by default, including validation of DNS results when opening a connection. Redirects are rejected; enter the provider's final API URL. For a trusted local deployment using a local model or mock server, set `AI_ALLOW_PRIVATE_ENDPOINTS=true` before starting the backend. This setting permits private destinations for all visitors of that backend, so leave it unset on publicly accessible deployments.
 
 ## License and Artwork
 

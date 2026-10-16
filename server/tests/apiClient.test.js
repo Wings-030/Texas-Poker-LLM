@@ -1,4 +1,4 @@
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { createMockProvider } from "../mockProvider.js";
 import { buildRequestBody, requestProvider } from "../apiClient.js";
 import { getModels } from "../modelService.js";
@@ -6,10 +6,11 @@ import { getModels } from "../modelService.js";
 let server;
 let baseUrl;
 beforeAll(async () => {
+  vi.stubEnv("AI_ALLOW_PRIVATE_ENDPOINTS", "true");
   server = await new Promise((resolve) => { const listener = createMockProvider().listen(0, "127.0.0.1", () => resolve(listener)); });
   baseUrl = `http://127.0.0.1:${server.address().port}/v1`;
 });
-afterAll(async () => { await new Promise((resolve) => server.close(resolve)); });
+afterAll(async () => { await new Promise((resolve) => server.close(resolve)); vi.unstubAllEnvs(); });
 
 function config(model, overrides = {}) {
   return { apiBaseUrl: baseUrl, apiKey: "test", model, stream: false, timeoutMs: 300, maxRetries: 0, retryDelayMs: 1, temperature: 0.7, topP: 1, maxTokens: 100, reasoningEffort: "", customHeaders: {}, customParameters: {}, ...overrides };

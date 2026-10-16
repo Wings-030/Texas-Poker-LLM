@@ -134,10 +134,7 @@ export function validateDecision(rawDecision, legalActions) {
   return { valid: amountValid, jsonValid: true, actionValid: true, amountValid, repaired: repairs.length > 0, repairs, decision, errorType: amountValid ? null : "INVALID_BET_AMOUNT" };
 }
 
-export function mergeStreamText(current, incoming) {
+export function mergeStreamText(current, incoming, cumulative = false) {
   if (!incoming) return current;
-  if (!current) return incoming;
-  if (incoming.startsWith(current)) return incoming;
-  if (current.endsWith(incoming)) return current;
-  return current + incoming;
+  return cumulative ? incoming : current + incoming;
 }

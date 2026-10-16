@@ -26,6 +26,8 @@ describe("responseParser", () => {
     expect(validateDecision({ action: "all_in" }, legal).valid).toBe(false);
     expect(validateDecision({ action: "raise", amount: 999, confidence: 0.9, reasoning_summary: "ignored" }, legal).decision).toEqual({ action: "raise", amount: 500, table_talk: "" });
     expect(safeFallback(legal)).toEqual({ action: "call", amount: 0, table_talk: "" });
-    expect(mergeStreamText("hel", "hello")).toBe("hello");
+    expect(mergeStreamText("hel", "hello", true)).toBe("hello");
+    expect(mergeStreamText("100", "0")).toBe("1000");
+    expect(mergeStreamText("哈", "哈")).toBe("哈哈");
   });
 });

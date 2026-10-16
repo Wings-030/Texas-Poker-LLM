@@ -42,9 +42,10 @@ const MESSAGES = {
 };
 
 export function classifyError(error, context = {}) {
-  if (error instanceof AppError) return error;
   if (context.cancelled || error?.name === "AbortError" && !context.timedOut) return new AppError("REQUEST_CANCELLED", MESSAGES.REQUEST_CANCELLED, { ...context, cause: error, cancelled: true, httpStatus: 499 });
   if (context.timedOut) return new AppError("REQUEST_TIMEOUT", MESSAGES.REQUEST_TIMEOUT, { ...context, cause: error, timedOut: true, httpStatus: 504 });
+  if (error instanceof AppError) return error;
+  if (error?.cause instanceof AppError) return error.cause;
   const code = error?.code ?? error?.cause?.code ?? "";
   if (code === "ENOTFOUND" || code === "EAI_AGAIN") return new AppError("DNS_ERROR", MESSAGES.DNS_ERROR, { ...context, cause: error, code, httpStatus: 502 });
   if (code === "ECONNREFUSED") return new AppError("CONNECTION_REFUSED", MESSAGES.CONNECTION_REFUSED, { ...context, cause: error, code, httpStatus: 502 });

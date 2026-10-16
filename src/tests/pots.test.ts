@@ -11,9 +11,9 @@ describe("主池与边池", () => {
 
   it("三人不同筹码全下生成多个边池", () => {
     const pots = buildPots([player("p0", 0, 50, "all-in"), player("p1", 0, 100, "all-in"), player("p2", 0, 200, "all-in")]);
-    expect(pots.map((pot) => pot.amount)).toEqual([150, 100, 100]);
+    expect(pots.map((pot) => pot.amount)).toEqual([150, 100]);
     expect(pots.map((pot) => pot.eligiblePlayerIds)).toEqual([
-      ["p0", "p1", "p2"], ["p1", "p2"], ["p2"],
+      ["p0", "p1", "p2"], ["p1", "p2"],
     ]);
   });
 
