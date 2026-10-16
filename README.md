@@ -2,57 +2,52 @@
 
 English | [简体中文](README.zh-CN.md)
 
-![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white)
-![TypeScript](https://img.shields.io/badge/TypeScript-7-3178C6?logo=typescript&logoColor=white)
-![Vite](https://img.shields.io/badge/Vite-8-646CFF?logo=vite&logoColor=white)
-![Express](https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white)
+**[Play online → poker.wings030.online](https://poker.wings030.online/)**
 
-A local-first, single-player No-Limit Texas Hold'em game. Play quick games or single-table tournaments against 1–8 computer opponents, review detailed statistics, and replay every hand action by action.
+A single-player No-Limit Texas Hold’em game with a private poker-room aesthetic. Sit down with 1–8 computer opponents, play a quick game or a single-table tournament, and review each hand afterward. Connect an optional LLM API to give the opponents distinct personalities, playing styles, and table talk.
 
-Computer players use local heuristic strategies by default, so no API is required. You can also connect any OpenAI Chat Completions-compatible LLM on a per-character basis, giving each opponent an independent personality, playing style, model configuration, and table talk.
+Play in your browser or run the project on your own machine. No API key is required to play with built-in strategies. All chips are virtual; there are no real-money transactions or multiplayer games.
 
-> This project does not include real-money gambling, deposits, withdrawals, or online multiplayer. It is intended for programming education, poker rule practice, and portfolio demonstration. Probabilities and action suggestions are provided for educational purposes only and do not constitute gambling or financial advice.
+## Preview
+
+An emerald felt table, champagne-gold accents, custom card backs, and eight illustrated character icons carry the visual theme from the lobby to the table. The layout adapts to desktop and mobile screens.
+
+**Lobby**
+
+![Lobby with game modes, opponent selection, and poker artwork](docs/previews/lobby.jpg)
+
+**At the table**
+
+![Nine-player table with community cards, chips, and betting controls](docs/previews/table.jpg)
 
 ## Features
 
-- **Complete No-Limit rules engine**: blinds, betting order, minimum raises, all-ins, showdowns, split pots, and multi-player side-pot settlement.
-- **Two game modes**: fixed-blind quick games and single-table tournaments with increasing blind levels and player elimination.
-- **Configurable tables**: choose 1–8 computer opponents and adjust starting chips, blinds, AI difficulty, and game speed.
-- **Dual AI system**: local heuristic AI works out of the box, while LLM decision-making can be enabled separately for each character.
-- **Customizable AI characters**: configure personality, playing style, default prompts, model selection, and sampling parameters.
-- **Statistics and replay**: track VPIP, PFR, WTSD, W$SD, net chips, streaks, and starting-hand performance, then replay each hand step by step.
-- **Automatic local saves**: save after every action, retain up to 300 hands, and import or export save data as JSON.
-- **Chinese and English UI**: responsive table layout, animations, sound effects, card styles, and optional beginner assistance.
-- **Local-first security**: the backend listens only on `127.0.0.1`, and the full API key is never returned to the browser.
+- **No-Limit rules:** blinds, minimum raises, all-ins, showdowns, split pots, and multi-player side pots.
+- **Two ways to play:** quick games with fixed blinds, or single-table tournaments with rising blinds and player elimination.
+- **Your table, your pace:** choose 1–8 opponents, starting chips, blinds, AI difficulty, and game speed.
+- **Optional LLM opponents:** enable model decisions per character and customize their personality, playing style, and additional prompt. Built-in heuristic strategies are also available.
+- **Statistics and replay:** track VPIP, PFR, WTSD, W$SD, net chips, streaks, and starting-hand results; replay each action while keeping unshown opponent cards hidden.
+- **Automatic saves:** retain the active game and up to 300 hands in the browser, with JSON import and export.
+- **Chinese and English:** switch languages in the header, with responsive layouts, animations, sound effects, and optional beginner assistance.
 
-## AI Modes
+## Play Online
 
-| Mode | API required | Characteristics | Best for |
-| --- | --- | --- | --- |
-| Local heuristic AI | No | Fast, free, and available in Easy, Normal, and Hard difficulties | Immediate play, rule practice, and offline use |
-| LLM-powered AI | Yes | Per-character models, personalities, playing styles, prompts, and table talk | Character-driven games and LLM application experiments |
+1. Open **[poker.wings030.online](https://poker.wings030.online/)**.
+2. Choose a game mode, opponents, and table settings.
+3. To use built-in strategies directly, turn off LLM use under **Character AI**. To use a model, follow the setup below.
+4. Start the game. Use **Statistics** and **Replays** to review your play afterward.
 
-LLM responses never modify the game state directly. Every action must pass the rules engine's legality checks. If a response times out, contains invalid formatting, selects an illegal action, or returns an out-of-range amount, the application attempts to repair it or falls back to a legal move.
+Saves belong to the current browser and site; they do not automatically sync across devices. Export a JSON save before switching browsers or clearing site data.
 
-## Quick Start
+## Run Locally
 
-### Requirements
-
-- Node.js `20.19+`, `22.12+`, or a newer supported version
-- npm
-- A modern desktop browser
-
-An LLM API is optional. Without one, the game automatically uses local heuristic AI.
+Install **Node.js 22.12 or later** with npm, then download or clone this repository.
 
 ### Windows
 
-1. Install [Node.js](https://nodejs.org/) with npm.
-2. Download or clone this repository.
-3. Double-click `start.bat` in the project root.
-4. On the first run, the script installs dependencies and builds the project, then opens `http://127.0.0.1:3000/` in your browser.
-5. Keep the command window open while playing. Press `Ctrl+C` or close the window to stop the server.
+Double-click `start.bat`. It installs missing dependencies, builds the project, starts the backend, and opens [localhost:3000](http://127.0.0.1:3000/). Keep the command window open while playing; press `Ctrl+C` to stop.
 
-If PowerShell execution policy blocks `npm.ps1`, use `npm.cmd` from the command line or run `start.bat` directly.
+If PowerShell blocks `npm.ps1`, use `npm.cmd` for the commands below or use the launcher.
 
 ### macOS / Linux
 
@@ -61,76 +56,43 @@ chmod +x start.sh
 ./start.sh
 ```
 
-Then open `http://127.0.0.1:3000/`.
+Then open [localhost:3000](http://127.0.0.1:3000/).
 
 ### Manual Start
 
 ```bash
 npm install
-npm run build
-npm run server
+npm start
 ```
 
-## Configure LLM Opponents
+`npm start` builds the frontend and starts Express, which serves the game at [localhost:3000](http://127.0.0.1:3000/).
 
-The game supports OpenAI-compatible `/v1/chat/completions` endpoints, including OpenAI, OpenRouter, and other providers implementing the same protocol.
+## Connect an LLM
 
-1. Start the game and open **Preferences** in the top-right corner.
-2. Select **AI API Settings**.
-3. Enter the `API Base URL`, `API Key`, and model name.
-4. Adjust streaming, timeout, retry, and sampling settings for your provider.
-5. Save the configuration and test the connection.
-6. Open **Character AI** and enable LLM decision-making for the desired opponents.
+The backend supports the OpenAI Chat Completions protocol. Supply a compatible provider’s base URL, API key, and model name.
 
-Common endpoint examples:
+1. Open **Preferences → AI API Settings**.
+2. Enter the connection details, such as a base URL ending in `/v1`.
+3. Save and test the configuration. If model discovery is unavailable, enter the model name manually.
+4. Open **Character AI** to enable LLM decisions and set additional prompts for individual opponents.
+5. Use **Default Prompts** to edit each character’s personality and playing style.
 
-```text
-https://api.openai.com/v1
-https://openrouter.ai/api/v1
-https://your-provider.example/v1
-```
+**API connection, model, and sampling settings are shared by the characters in your browser’s configuration.** The per-character controls select whether to use the model and how the character is prompted; they do not select separate models.
 
-The application normalizes the base URL to avoid duplicated paths such as `/v1/v1/chat/completions`. If the provider does not support `/models`, enter the model name manually.
+Model actions are checked against the rules engine. Missing configuration, failed requests, or invalid responses lead to a legal fallback action; malformed responses may also be retried or repaired. LLM quality and speed depend on the provider. API calls, including connection tests, use your provider account and may incur charges.
 
-> **Test Connection** sends a real request to the configured provider and may incur a small token charge.
+## Saves and API Keys
 
-### Local Mock Provider
+- **Game data:** settings, statistics, hand history, and the active game are stored in browser `localStorage`. JSON exports contain game data, not your API key or API access credential.
+- **Visitor configuration:** the browser keeps a random access credential. The backend uses it to isolate API configuration, logs, and request cancellation. Tabs on the same site in the same browser share this configuration; another browser or site origin has separate storage.
+- **Key storage:** provider requests go through this site’s backend. API keys are stored on that server and are accessible to its administrator. On the online demo, this means the hosted server; when self-hosting, it means your own server. The full saved key is not returned to the page. Missing configuration never uses the site owner’s key.
+- **Deleting a key:** use **AI API Settings → Clear Configuration** before clearing browser site data. Clearing browser data alone removes your access credential but does not delete the server’s configuration file.
 
-For development and testing without consuming real API credits:
+Runtime configurations and logs are excluded from Git. Logs redact common credential fields; see [server/](server/) for implementation and tests.
 
-```bash
-npm run mock-provider
-```
+## Development
 
-Use the following settings in the game:
-
-```text
-API Base URL: http://127.0.0.1:3999/v1
-API Key: any non-empty test string
-Model: mock-normal
-```
-
-In addition to normal and streaming responses, the Mock Provider includes scenarios for authentication failures, rate limits, timeouts, disconnects, malformed output, and illegal actions. See `server/mockProvider.js` for the available model names.
-
-## Data, Privacy, and Security
-
-- Game settings, statistics, hand history, and the active save are stored in browser `localStorage`.
-- Each visitor supplies their own API base URL, API key, and model, with usage billed to that provider account. Missing configuration never falls back to the site owner's key.
-- The browser stores a random access credential in `localStorage`. The server stores configurations in `config/visitors/<credential-hash>.json` and logs in `logs/visitors/<credential-hash>/`; both are excluded by `.gitignore`. API keys are not included in browser game saves or returned in full to the page.
-- Configuration, logs, and request cancellation are isolated by browser; tabs on the same site in the same browser share configuration. Never share the browser credential. Public access must use HTTPS.
-- The old `config/api-config.json` (including an old file selected by `AI_CONFIG_PATH`) is no longer used for web requests or migrated to visitors. Enter your details again on first use. `AI_CONFIG_DIR` and `AI_LOG_DIR` can override the visitor configuration root and log root.
-- The backend binds only to `127.0.0.1` and does not expose itself to the LAN or public internet.
-- The browser communicates only with this site's backend, which sends remote requests using the current visitor's key. Keys are stored on the server, where the server administrator has file access.
-- Configuration responses report only whether a key exists and a masked suffix, never the complete key.
-- Logs recursively redact common authentication headers, tokens, cookies, passwords, and secret fields.
-- Model decisions must pass legal-action and bet-range validation and cannot bypass the poker rules.
-- Unrevealed computer hole cards remain hidden in hand replays.
-
-Clearing browser site data removes local game records and the API access credential; switching browsers also requires entering API details again. To delete a server-stored API key, use **Clear Configuration** before clearing site data; clearing site data alone does not delete server files. Export a JSON save from **Statistics** before clearing data or switching browsers. Game exports do not include the API access credential.
-
-## Local Development
-
-Development mode requires the backend and Vite development server to run at the same time:
+Built with **React, TypeScript, Vite, Express, and Vitest**. After `npm install`, run the backend and frontend in separate terminals:
 
 ```bash
 # Terminal 1
@@ -140,47 +102,50 @@ npm run server
 npm run dev
 ```
 
-Vite proxies `/api` requests to `http://127.0.0.1:3000`.
-
-### Commands
+Open [localhost:5173](http://127.0.0.1:5173/). Vite proxies `/api` requests to the backend on port 3000.
 
 | Command | Purpose |
 | --- | --- |
+| `npm start` | Build and serve the application |
 | `npm run dev` | Start the Vite development server |
-| `npm run server` | Start the local Express backend |
-| `npm run build` | Run TypeScript checks and create a production build |
-| `npm test` | Run the complete Vitest test suite |
+| `npm run server` | Start the Express backend |
+| `npm run build` | Check TypeScript and create the production build |
+| `npm test` | Run the Vitest test suite |
 | `npm run test:watch` | Run tests in watch mode |
-| `npm run mock-provider` | Start the local mock AI provider |
+| `npm run mock-provider` | Start a local mock LLM provider |
+
+### Test Without API Credits
+
+Run `npm run mock-provider` alongside the local application, then configure:
+
+```text
+API Base URL: http://127.0.0.1:3999/v1
+API Key: mock-key
+Model: mock-normal
+```
+
+The mock also covers streaming, authentication errors, rate limits, timeouts, disconnects, malformed responses, and illegal actions. Model names are listed in [server/mockProvider.js](server/mockProvider.js). Use this with a locally running backend; the online demo cannot reach a mock server on your computer through its loopback address.
 
 ### Project Structure
 
 ```text
-.
-├─ public/cards/          # Playing-card image assets
-├─ src/
-│  ├─ api/                # Frontend AI requests and game-state snapshots
-│  ├─ components/         # Table, controls, settings, statistics, and replay UI
-│  ├─ data/               # AI players and character configuration
-│  ├─ engine/             # Deck, betting, hands, pots, odds, and tournament engine
-│  ├─ pages/              # Home, game, statistics, and replay pages
-│  ├─ storage/            # Local saves, import/export, and statistics
-│  └─ tests/              # Frontend and rules-engine tests
-├─ server/                # Express API, model requests, parsing, logs, and tests
-├─ shared/                # AI character data shared by frontend and backend
-├─ config/                # API configuration example and local runtime config
-├─ start.bat              # Windows launcher
-└─ start.sh               # macOS / Linux launcher
+public/art/       Lobby artwork
+public/cards/     Card faces and custom card back
+src/components/   Table, controls, settings, and shared UI
+src/engine/       Deck, betting, hands, pots, odds, and tournaments
+src/pages/        Lobby, game, statistics, and replay
+src/storage/      Browser saves, import/export, and statistics
+server/           Express API, model requests, logging, and tests
+shared/           Character definitions shared by client and server
+docs/             Art direction and screenshots
 ```
 
-## Current Limitations
+### Self-Hosting
 
-- Local single-player only; online multiplayer is not supported.
-- Saves primarily rely on the current browser's `localStorage` and do not sync across devices.
-- LLM decision quality, latency, and cost depend on the selected model and provider.
-- The project includes a local Express backend and cannot be deployed directly as a static GitHub Pages site.
-- This is not a professional poker trainer; beginner suggestions and probability estimates are for educational reference only.
+Run `npm install` and `npm start`. Express serves `dist/` and the API on `127.0.0.1:3000`; `PORT` can change the port. For public access, place an HTTPS reverse proxy in front of it and preserve streaming responses for the AI endpoints. Full LLM functionality requires the backend, so static-only hosting is insufficient.
 
-## License
+Visitor configuration defaults to `config/visitors/`, and logs to `logs/visitors/`. Use `AI_CONFIG_DIR` and `AI_LOG_DIR` to override the configuration root and log root. Existing legacy `config/api-config.json` files are not used for visitor requests; configure the API through the page.
 
-This project is released under the [MIT License](LICENSE).
+## License and Artwork
+
+Released under the [MIT License](LICENSE). See [Art Direction](docs/ART_DIRECTION.md) for visual assets, the generated lobby artwork’s prompt, and verification notes.
