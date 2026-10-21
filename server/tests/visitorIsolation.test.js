@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import express from "express";
 import { createHash } from "node:crypto";
-import { mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { createApp } from "../server.js";
@@ -114,6 +114,8 @@ describe("visitor-owned API configuration", () => {
     }
     origin = await listen(createApp(options));
     expect((await api(alice, "config")).body.config).toMatchObject({ model: "model-alice", apiKeyConfigured: true });
+    // Visitor keys stay in process memory: no configuration file is ever written.
+    await expect(readdir(options.configDir)).rejects.toThrow();
     await api(bob, "config", "DELETE");
     expect((await api(bob, "config")).body.config.apiKeyConfigured).toBe(false);
     expect((await api(alice, "config")).body.config.apiKeyConfigured).toBe(true);

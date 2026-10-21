@@ -10,8 +10,7 @@ afterEach(async () => { await Promise.all(temporary.splice(0).map((target) => rm
 
 describe("configuration and logging", () => {
   it("saves configuration while never exposing the API key", async () => {
-    const directory = await mkdtemp(path.join(os.tmpdir(), "poker-config-")); temporary.push(directory);
-    const manager = new ConfigManager(path.join(directory, "api-config.json"));
+    const manager = new ConfigManager("test-config-scope");
     const saved = await manager.save({ apiBaseUrl: "http://127.0.0.1:3999/v1", apiKey: "sk-super-secret-1234", model: "mock-normal", customHeaders: { Authorization: "Bearer custom-secret" } });
     expect((await manager.read()).apiKey).toBe("sk-super-secret-1234");
     expect(publicConfig(saved)).not.toHaveProperty("apiKey");

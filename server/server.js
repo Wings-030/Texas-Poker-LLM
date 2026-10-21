@@ -9,7 +9,7 @@ import { cleanupOldLogs, clearLogs, DEFAULT_LOG_DIR, listRequestLogs, readReques
 import { getModels, testConnection } from "./modelService.js";
 import { makePokerDecision, markStaleResponse } from "./pokerAiService.js";
 import { requestCoordinator } from "./requestCoordinator.js";
-import { DEFAULT_VISITOR_CONFIG_DIR, visitorContext } from "./visitorContext.js";
+import { visitorContext } from "./visitorContext.js";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const DIST = path.join(ROOT, "dist");
@@ -100,7 +100,7 @@ export async function startServer() {
     console.log("Poker AI backend started successfully");
     console.log(`Service: ${address}`);
     console.log(`Logs: ${DEFAULT_LOG_DIR}`);
-    console.log(`Visitor configurations: ${DEFAULT_VISITOR_CONFIG_DIR}`);
+    console.log("Visitor configurations: in memory only (cleared on restart)");
     console.log(`DEBUG_AI: ${DEBUG_AI}`);
     console.log("Waiting for visitor API requests...");
     console.log("==================================================");

@@ -1,10 +1,3 @@
-import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
-
-const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-export const DEFAULT_CONFIG_PATH = path.join(ROOT, "config", "api-config.json");
-
 export const DEFAULT_CONFIG = Object.freeze({
   apiBaseUrl: "", apiKey: "", model: "", stream: true,
   timeoutMs: 120000, maxRetries: 2, retryDelayMs: 1500,
@@ -74,17 +67,17 @@ export function publicConfig(config) {
   return { ...safe, customHeaders: redactPublic(safe.customHeaders), customParameters: redactPublic(safe.customParameters), apiKeyConfigured: Boolean(apiKey), apiKeyPreview: apiKeyPreview(apiKey) };
 }
 
+// Visitor configurations live in process memory only: API keys are never written to disk,
+// so they disappear when the server process restarts.
+const visitorConfigs = new Map();
+
 export class ConfigManager {
-  constructor(configPath = process.env.AI_CONFIG_PATH || DEFAULT_CONFIG_PATH) { this.configPath = configPath; }
-  async read() {
-    try { return normalizeConfig(JSON.parse(await readFile(this.configPath, "utf8")), DEFAULT_CONFIG); }
-    catch (error) { if (error?.code === "ENOENT") return { ...DEFAULT_CONFIG }; throw error; }
-  }
+  constructor(scope) { this.scope = scope; }
+  async read() { return normalizeConfig(visitorConfigs.get(this.scope) ?? {}, DEFAULT_CONFIG); }
   async save(input) {
     const config = normalizeConfig(input, await this.read());
-    await mkdir(path.dirname(this.configPath), { recursive: true, mode: 0o700 });
-    await writeFile(this.configPath, `${JSON.stringify(config, null, 2)}\n`, { encoding: "utf8", mode: 0o600 });
+    visitorConfigs.set(this.scope, config);
     return config;
   }
-  async clear() { await rm(this.configPath, { force: true }); return { ...DEFAULT_CONFIG }; }
+  async clear() { visitorConfigs.delete(this.scope); return { ...DEFAULT_CONFIG }; }
 }

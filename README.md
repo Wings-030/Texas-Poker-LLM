@@ -144,7 +144,7 @@ docs/             Art direction and screenshots
 
 Run `npm install` and `npm start`. Express serves `dist/` and the API on `127.0.0.1:3000`; `PORT` can change the port. For public access, place an HTTPS reverse proxy in front of it and preserve streaming responses for the AI endpoints. Full LLM functionality requires the backend, so static-only hosting is insufficient.
 
-Visitor configuration defaults to `config/visitors/`, and logs to `logs/visitors/`. Use `AI_CONFIG_DIR` and `AI_LOG_DIR` to override the configuration root and log root. Existing legacy `config/api-config.json` files are not used for visitor requests; configure the API through the page.
+Visitor configuration lives in process memory only, so API keys are never written to disk and are cleared whenever the backend restarts. Request logs go to `logs/visitors/`; use `AI_LOG_DIR` to override the log root. Existing legacy `config/api-config.json` files are not used for visitor requests; configure the API through the page.
 
 Provider requests accept public IP addresses only by default, including validation of DNS results when opening a connection. Redirects are rejected; enter the provider's final API URL. For a trusted local deployment using a local model or mock server, set `AI_ALLOW_PRIVATE_ENDPOINTS=true` before starting the backend. This setting permits private destinations for all visitors of that backend, so leave it unset on publicly accessible deployments.
 

@@ -144,7 +144,7 @@ docs/             美术说明与界面截图
 
 执行 `npm install` 和 `npm start`。Express 在 `127.0.0.1:3000` 提供 `dist/` 静态文件与 API，可通过 `PORT` 修改端口。公网访问需在前方配置 HTTPS 反向代理，并保留 AI 接口的流式响应。完整的大模型功能依赖后端，不能仅使用纯静态托管。
 
-访客配置默认保存在 `config/visitors/`，日志保存在 `logs/visitors/`。可通过 `AI_CONFIG_DIR` 和 `AI_LOG_DIR` 修改配置根目录与日志根目录。旧版 `config/api-config.json` 不用于访客请求，请在页面中重新配置 API。
+访客配置只保存在进程内存中，API Key 不会写入磁盘，后端重启后即清空。请求日志保存在 `logs/visitors/`，可通过 `AI_LOG_DIR` 修改日志根目录。旧版 `config/api-config.json` 不用于访客请求，请在页面中重新配置 API。
 
 模型请求默认只允许公网 IP，并在建立连接时检查域名实际解析结果。重定向会被拒绝，请直接填写服务商最终的 API 地址。需要连接本地模型或模拟服务时，可在可信的本地部署中设置 `AI_ALLOW_PRIVATE_ENDPOINTS=true` 后启动后端。此开关会对该后端的所有访客放行内网目标，因此公网部署请保持默认关闭。
 
