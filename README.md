@@ -150,4 +150,6 @@ Provider requests accept public IP addresses only by default, including validati
 
 ## License and Artwork
 
-Released under the [MIT License](LICENSE). See [Art Direction](docs/ART_DIRECTION.md) for visual assets, the generated lobby artwork’s prompt, and verification notes.
+Copyright (c) 2026 Texas Hold’em LLM contributors.
+
+Released under the [GNU Affero General Public License version 3](LICENSE) (AGPL-3.0-only). See [Art Direction](docs/ART_DIRECTION.md) for visual assets, the generated lobby artwork’s prompt, and verification notes.

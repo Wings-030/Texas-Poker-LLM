@@ -150,4 +150,6 @@ docs/             美术说明与界面截图
 
 ## 开源协议与美术
 
-项目采用 [MIT License](LICENSE)。视觉资源、大厅主视觉的生成提示词与验证记录见[美术说明](docs/ART_DIRECTION.md)。
+Copyright (c) 2026 Texas Hold’em LLM contributors.
+
+项目采用 [GNU Affero General Public License version 3](LICENSE)（AGPL-3.0-only）。视觉资源、大厅主视觉的生成提示词与验证记录见[美术说明](docs/ART_DIRECTION.md)。
